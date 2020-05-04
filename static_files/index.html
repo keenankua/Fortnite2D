@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta HTTP-EQUIV="EXPIRES" CONTENT="-1">
+		<script src="jquery-3.3.1.min.js"></script>
+		<script src="controller.js" > </script>		
+		<link rel="stylesheet" href="index.css">
+		<script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+		<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+		<script src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+		<script src="https://unpkg.com/@material-ui/core/umd/material-ui.production.min.js" crossorigin="anonymous"></script>
+		<!-- Fonts to support Material Design -->
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+		<!-- Icons to support Material Design -->
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+
+  </head>
+
+  <body>
+	<div id="shownUI"></div>
+    <script type="text/babel">
+		const {
+			MuiThemeProvider,
+			AppBar,
+			TextField,
+			Button,
+			Typography,
+			Container,
+			Grid,
+			Paper,
+		} = MaterialUI;
+	
+		
+		// The currently shown UI, changed by mowdifying state's currentUI
+		class ShownUI extends React.Component {
+			constructor(props) {
+				super(props);
+				this.state = {currentUI:LoginUI};
+				this.changeCurrentUI = this.changeCurrentUI.bind(this);
+				this.setCurrentUsername = this.setCurrentUsername.bind(this);
+				this.username = null;
+			}
+		
+			changeCurrentUI(UI) {
+				if (this.state.currentUI == GameUI) {
+					endGame();
+				}
+				this.setState({currentUI:UI});
+			}
+			
+			setCurrentUsername(user) {
+				this.setState({username:user});
+			}
+		
+			render() {
+				var CurrentUI = this.state.currentUI;
+				// Pass changeCurrentUI as a property to children so they can change this state
+				return (
+					<CurrentUI changeUI={this.changeCurrentUI} setUsername={this.setCurrentUsername} username={this.state.username} />
+				);
+			}
+		}
+		
+		// Username and password input fields along with a submit button
+		// This form is reused for login and registration
+		class LoginForm extends React.Component {
+			constructor(props){
+				super(props);
+				this.state={
+					username:'',
+					password:'',
+					formSuccessText:null,
+					formErrorText:null,
+				}
+				this.handleClick = this.handleClick.bind(this);
+			}
+			
+			// Handler for submit button
+			handleClick(e) {
+				if (this.state.username.trim() == "" || this.state.password.trim() == "") {
+					this.setState({formErrorText:"Username and password cannot be blank"})
+				}
+				else {
+					// Determine if the form is being used for login or registration by a property passed in
+					if (this.props.action == "login") { // user login
+						fetch("/login/"+this.state.username+"/password/"+this.state.password, {
+							method: 'get'
+						}).then(response => response.json())
+						.then(response => {
+							if (response.code == 200) {
+								// Successful login
+								this.props.changeUI(GameUI)
+								this.props.setUsername(this.state.username)
+								setupGame()
+							}
+							else if (response.code == 204) {
+								// Invalid credentials, add feedback to be displayed on form
+								this.setState({formErrorText:"Invalid credentials"})
+							}
+							else {
+								// Error, add feedback to be displayed on form
+								this.setState({formErrorText:"There was an error processing your request"})
+							}
+						}).catch(function(err) {
+							// Error, add feedback to be displayed on form
+							 this.setState({formErrorText:"There was an error processing your request"})
+						});
+					}
+					else { // register new account
+						fetch("/create/"+this.state.username+"/password/"+this.state.password, {
+							method: 'post'
+						}).then(response => response.json())
+						.then(response => {
+							if (response.code == 200) {
+								// Successful account creation, add feedback to be displayed on form
+								this.setState({formSuccessText:"Account created", formErrorText:null})
+							}
+							else {
+								// Username already taken, add feedback to be displayed on form
+								this.setState({formErrorText:"That username is taken", formSuccessText:null})
+							}
+						}).catch(function(err) {
+							// Error, add feedback to be displayed on form
+							 this.setState({formErrorText:"There was an error processing your request"})
+						});	
+					}
+				}
+			}
+			
+			render() {
+				return (
+					<div>
+						<TextField
+							label="Username"
+							id="standard-required"
+							autoFocus
+							required
+							fullWidth
+							onChange = {e=> {
+								this.setState({username:e.target.value})
+							}}
+						/>
+						<br/>
+						<TextField
+							type="password"
+							label="Password"
+							required
+							fullWidth
+							onChange = {e=> {
+								this.setState({password:e.target.value})
+							}}
+						/>
+						<br/>
+						<Typography
+							variant="overline"
+							color="inherit"
+						>
+						{this.state.formSuccessText}
+						</Typography>
+						<Typography
+							variant="overline"
+							color="error"
+						>
+						{this.state.formErrorText}
+						</Typography>
+						<br/>
+						<Button
+							type="submit"
+							color="primary"
+							variant="contained"
+							fullWidth
+							onClick={(event) => this.handleClick(event)}
+						>
+							{this.props.action}
+						</Button>
+					</div>
+				);
+			}
+		}
+		
+		// Button to change to the registration page
+		class RegisterButton extends React.Component {
+			constructor(props) {
+				super(props);
+				this.clickHandler = this.clickHandler.bind(this);
+			}
+			
+			clickHandler(e){
+				this.props.changeUI(RegisterUI)
+			}
+			
+			render(props){
+				return (
+					<Button
+						type="submit"
+						color="secondary"
+						variant="contained"
+						onClick={this.clickHandler}
+					>
+						Registration
+					</Button>					
+				);
+			}
+		}
+		
+		// Button to change to the highscores page
+		class HighscoresButton extends React.Component {
+			constructor(props) {
+				super(props);
+				this.clickHandler = this.clickHandler.bind(this);
+			}
+			
+			clickHandler(e){
+				this.props.changeUI(HighscoresUI)
+			}
+			
+			render(props){
+				return (
+					<Button
+						type="submit"
+						color="secondary"
+						variant="contained"
+						onClick={this.clickHandler}
+					>
+						Highscores
+					</Button>	
+				);
+			}
+		}
+		
+		class ProfileButton extends React.Component {
+			constructor(props) {
+				super(props);
+				this.clickHandler = this.clickHandler.bind(this);
+			}
+			
+			clickHandler(e){
+				this.props.changeUI(ProfileUI)
+			}
+			
+			render(props){
+				return (
+					<Button
+						type="submit"
+						color="secondary"
+						variant="contained"
+						onClick={this.clickHandler}
+					>
+						Profile
+					</Button>	
+				);
+			}
+		}
+		
+		// Button to change back to the login page
+		class BackToLoginButton extends React.Component {
+			constructor(props) {
+				super(props);
+				this.clickHandler = this.clickHandler.bind(this);
+			}
+			
+			clickHandler(e){
+				this.props.changeUI(LoginUI)
+			}
+			
+			render(props){
+				return (
+					<Button
+						type="submit"
+						color="secondary"
+						variant="contained"
+						onClick={this.clickHandler}
+					>
+						Back to login
+					</Button>	
+				)
+			}
+		}
+		
+		// Button to play again
+		class PlayAgainButton extends React.Component {
+			constructor(props) {
+				super(props);
+				this.clickHandler = this.clickHandler.bind(this);
+			}
+			
+			clickHandler(e){
+				this.props.playAgain()
+				setupGame()
+			}
+			
+			render(props){
+				return (
+					<Button
+						type="submit"
+						color="primary"
+						variant="contained"
+						onClick={this.clickHandler}
+					>
+						Play again
+					</Button>	
+				);
+			}
+		}
+		
+		// The login poage
+		class LoginUI extends React.Component {
+			constructor(props) {
+				super(props);
+			}
+
+			render() {
+				return (
+					<div>
+						<Paper id="loginForm" elevation={3}>
+							<Grid
+								container
+								spacing={1}
+								direction="column"
+								alignItems="center"
+								justify="center"
+							>
+								<Grid item xs={12}>
+									<Typography id="mainTitle" variant="h4" color="textPrimary">Fortnite2D</Typography>	
+								</Grid>
+								<Grid item xs={12}>
+									<LoginForm changeUI={this.props.changeUI} setUsername={this.props.setUsername} action="login" />
+								</Grid>
+								<Grid item xs={12}>
+									<RegisterButton changeUI={this.props.changeUI} />
+								</Grid>
+								<Grid item xs={12}>
+									<HighscoresButton changeUI={this.props.changeUI} />
+								</Grid>
+							</Grid>
+						</Paper>
+					</div>
+				
+				);
+			}
+		}
+		
+		// The registration page
+		class RegisterUI extends React.Component {
+			constructor(props){
+				super(props);
+			}
+			
+			render() {
+				return (
+					<div id="Register">
+						<Paper id="loginForm" elevation={3}>
+							<Grid
+								container
+								spacing={1}
+								direction="column"
+								alignItems="center"
+								justify="center"
+							>
+								<Grid item xs={12}>
+									<Typography id="mainTitle" variant="h5" color="textPrimary">Registration</Typography>	
+								</Grid>
+								<Grid item xs={12}>
+									<LoginForm changeUI={this.props.changeUI} action="register" />
+								</Grid>
+								<Grid item xs={12}>
+									<BackToLoginButton changeUI={this.props.changeUI} />
+								</Grid>
+								<Grid item xs={12}>
+									<HighscoresButton changeUI={this.props.changeUI} />
+								</Grid>
+							</Grid>
+						</Paper>
+					</div>
+				);
+			}
+		}
+		
+		// The highscores page
+		class HighscoresUI extends React.Component {
+			constructor(props){
+				super(props);
+				this.state={
+					tableHtml:null,
+				}
+			}
+			
+			componentDidMount() {
+				fetch("/getHighscores", {
+					method: 'get'
+				}).then(response => response.json())
+				.then(response => {
+					if (response.code == 200) {
+						this.setState({tableHtml:response.success})
+					}
+					else {
+						this.setState({tableHtml:"There was an error processing your request"})
+					}
+				}).catch(function(err) {
+					 this.setState({tableHtml:"There was an error processing your request"})
+				});
+			}
+			
+			render() {
+				return (
+					<div id="highscores_screen">
+						<Grid
+							container
+							spacing={16}
+							direction="column"
+							alignItems="center"
+							justify="center"
+						>
+							<Grid item xs={12}>
+								<h1>Top 10 Highscores</h1>
+							</Grid>
+							<Grid item xs={12}>
+								<div id="highscoresTable" dangerouslySetInnerHTML={{ __html: this.state.tableHtml }} />
+							</Grid>
+							<Grid item xs={12}>
+								<BackToLoginButton changeUI={this.props.changeUI} />
+							</Grid>
+						</Grid>
+					</div>
+				);
+			}
+		}
+		class SaveButton extends React.Component {
+			constructor(props) {
+				super(props);
+				this.clickHandler = this.clickHandler.bind(this);
+				this.state={
+					name:props.name
+				}
+
+
+			}
+			
+			clickHandler(e){
+				fetch("/save/"+this.state.name+"/name/"  + $('#name-text').val() +"/anime/"+ $('#anime-text').val() + "/email/" + $('#email-text').val(), {
+					method: 'post'
+				}).then(response => response.json())
+				.then(response => {
+					if (response.code == 200) {
+						// Successfully added score
+						console.log("saved successfully")
+					}
+					else {
+						console.log("Error saving")
+					}
+				}).catch(function(err) {
+					// Error
+					console.log("Error adding score")
+				});	
+			}
+			
+			render(props){
+				return (
+					<Button
+						type="submit"
+						color="primary"
+						variant="contained"
+						onClick={this.clickHandler}
+					>
+						Save
+					</Button>	
+				);
+			}
+		}
+
+		// User profile screen
+		class ProfileUI extends React.Component {
+			constructor(props){
+				super(props);
+				this.state={
+					profile:{anime:'', email:'', name:''},
+					name:props.username
+				}
+			}
+			
+			componentDidMount() {
+				fetch("/getProfile/" + this.state.name, {
+					method: 'get'
+				}).then(response => response.json())
+				.then(response => {
+					if (response.code == 200) {
+						var prof = JSON.parse(response.success);
+						this.setState({profile:prof, name:this.state.username})
+					}
+					else {
+						this.setState({tableHtml:"There was an error processing your request"})
+					}
+				})
+			}
+			
+			render() {
+				return (
+					<div id="Profile">
+						<Paper id="loginForm" elevation={3}>
+							<Grid
+								container
+								spacing={1}
+								direction="column"
+								alignItems="center"
+								justify="center"
+							>
+								<Grid item xs={12}>
+									<Typography id="mainTitle" variant="h5" color="textPrimary">Profile</Typography>	
+								</Grid>
+								<Grid item xs={12}>
+									<TextField
+										helperText="Name"
+										value={this.state.profile.name}
+										id="name-text"
+									/>
+								</Grid>					
+								<Grid item xs={12}>
+									<TextField
+										helperText="Email"
+										value={this.state.profile.email}
+										id="email-text"
+									/>
+								</Grid>
+								<Grid item xs={12}>
+									<TextField
+										helperText="Favourite anime"
+										value={this.state.profile.anime}
+										id="anime-text"
+									/>
+								</Grid>								
+								<Grid item xs={12}>
+									<SaveButton changeUI={this.props.changeUI} name={this.state.name} />
+								</Grid>
+								<Grid item xs={12}>
+									<BackToLoginButton changeUI={this.props.changeUI} />
+								</Grid>
+							</Grid>
+						</Paper>
+					</div>
+				);
+			}
+		}
+		
+		// The game page
+		class GameUI extends React.Component {
+			constructor(props){
+				super(props);
+				this.state={
+					showPlayAgain:false,
+					score:0,
+				}
+				window.gameUI = this;
+				this.setScore = this.setScore.bind(this);
+				this.submitScore = this.submitScore.bind(this);
+				this.setShowPlayAgain = this.setShowPlayAgain.bind(this);
+			}
+			
+			setScore(newScore) {
+				this.setState({score:newScore})
+			}
+			
+			// Handler for submit button
+			submitScore() {
+				var newDate = new Date();
+				newDate = newDate.toISOString();
+
+				fetch("/addScore/"+this.props.username+"/score/"+this.state.score+"/date/"+newDate, {
+					method: 'post'
+				}).then(response => response.json())
+				.then(response => {
+					if (response.code == 200) {
+						// Successfully added score
+						console.log("Added score successfully")
+					}
+					else {
+						console.log("Error adding score")
+					}
+				}).catch(function(err) {
+					// Error
+					console.log("Error adding score")
+				});	
+			}
+			
+			setShowPlayAgain(val) {
+				this.setState({showPlayAgain:val})
+			}
+			
+			render() {
+				return (
+					<div>
+						<center>
+							<Grid
+								container
+								spacing={24}
+								alignItems="center"
+								justify="center"
+								id="gameGrid"
+							>
+								<Grid item xs={12}>
+									<canvas id="stage" width={800} height={800} />
+								</Grid>
+								<Grid item xs={4}>
+									<ProfileButton changeUI={this.props.changeUI} />
+								</Grid>
+								<Grid item xs={4}>
+									<Paper id="scoreBackground" elevation={2}>
+										<p id="currScore">Score: {this.state.score}</p>
+									</Paper>
+								</Grid>
+								<Grid item xs={4}>
+									<HighscoresButton changeUI={this.props.changeUI} />
+								</Grid>
+							</Grid>
+						</center>
+						{ this.state.showPlayAgain ? <PlayAgainUI changeUI={this.props.changeUI} setShowPlayAgain={this.setShowPlayAgain} /> : null }
+					</div>
+				);
+			}
+		}
+		
+		// The popup that appears when player dies
+		class PlayAgainUI extends React.Component {
+			constructor(props){
+				super(props);
+				this.playAgain = this.playAgain.bind(this);
+			}
+
+			// If user wants to play again, remove play again screen
+			playAgain() {
+				this.props.setShowPlayAgain(false)
+			}
+			
+			render() {
+				return (
+					<div id="play_again_screen" className="modal">
+						<div className="modal-content">
+							<p>Oh no, you died!<br />Your score has been saved.</p>
+							<PlayAgainButton playAgain={this.playAgain} />
+							<HighscoresButton changeUI={this.props.changeUI} />
+							<BackToLoginButton changeUI={this.props.changeUI} />
+						</div>
+					</div>
+				);
+			}
+		}
+		
+		ReactDOM.render(<ShownUI />, document.getElementById('shownUI'))
+    </script>
+  </body>
+</html>

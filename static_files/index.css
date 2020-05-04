@@ -1,0 +1,214 @@
+body {
+	background-color: #eeeeee;
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+}
+
+#ui_login {
+	padding-left: 50px;
+}
+
+#mainTitle {
+	margin-top: 0px;
+	margin-bottom: 10px;
+	font-weight: bold;
+}
+
+#register_screen {
+	padding-left: 50px;
+}
+
+#registrationTitle {
+	margin-top: 30px;
+	margin-bottom: 30px;
+}
+input[type=text], input[type=password] {
+	width: 300px;
+	padding: 12px 20px;
+	margin: 8px 0;
+	display: inline-block;
+	border: 1px solid #ccc;
+	box-sizing: border-box;
+}
+
+#loginSubmit {
+	background-color: #4CAF50;
+	color: white;
+	padding: 14px 20px;
+	margin: 8px 0;
+	border: none;
+	cursor: pointer;
+	width: 300px;
+}
+
+#backToLoginButton {
+	background-color: #4CAF50;
+	color: white;
+	padding: 14px 20px;
+	margin: 8px 0;
+	border: none;
+	cursor: pointer;
+	width: 150px;
+}
+
+#registerNew, #create_account {
+	background-color: #4287f5;
+	color: white;
+	padding: 14px 20px;
+	margin: 8px 0;
+	border: none;
+	cursor: pointer;
+	width: 150px;
+}
+
+#playAgainButton {
+	background-color: #000000;
+	color: white;
+	padding: 14px 20px;
+	margin: 8px 0;
+	border: none;
+	cursor: pointer;
+	width: 150px;
+}
+
+#goToHighscoresButton {
+	background-color: #ffb300;
+	color: white;
+	padding: 14px 20px;
+	margin: 8px 0;
+	border: none;
+	cursor: pointer;
+	width: 150px;
+}
+
+#goToLoginPageButton {
+	background-color: #4CAF50;
+	color: white;
+	padding: 14px 20px;
+	margin: 8px 0;
+	border: none;
+	cursor: pointer;
+	width: 150px;
+}
+
+#showHighscores {
+	background-color: #ffb300;
+	color: white;
+	padding: 14px 20px;
+	margin: 8px 0;
+	border: none;
+	cursor: pointer;
+	width: 150px;
+}
+
+/* The Modal (background) */
+.modal {
+	display: block;
+	position: fixed; /* Stay in place */
+	z-index: 1; /* Sit on top */
+	padding-top: 100px; /* Location of the box */
+	left: 0;
+	top: 0;
+	width: 100%; /* Full width */
+	height: 100%; /* Full height */
+	overflow: auto; /* Enable scroll if needed */
+	background-color: rgb(0,0,0); /* Fallback color */
+	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+	background-color: #fefefe;
+	margin: auto;
+	padding: 20px;
+	border: 1px solid #888;
+	width: 40%;
+}
+
+#title {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+#legend {
+	border-collapse: collapse;
+	width: 800px;
+	margin: 0 auto;
+}
+
+#legend td, #legend th {
+	border: 1px solid #ddd;
+	padding: 8px;s
+}
+
+#legend tr:nth-child(odd){background-color: #f2f2f2;}
+
+
+#legend th {
+	padding-top: 12px;
+	padding-bottom: 12px;
+	text-align: left;
+	background-color: #4CAF50;
+	color: white;
+}
+
+#legendObj {
+	text-align: center;
+}
+
+#legend caption {
+	font-size: 22px;
+}
+
+#currScore {
+	font-weight: bold;
+	font-size: 24px;
+	padding: 0;
+	margin: 0;
+	text-align: center;
+}
+
+#highscoresTable {
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	border-collapse: collapse;
+	width: 100%;
+	text-align: center;
+	padding-bottom: 24px;
+}
+
+#highscoresTable td, #highscoresTable th {
+	border: 1px solid #ddd;
+	padding: 8px;
+}
+
+#highscoresTable tr:nth-child(even){background-color: #f2f2f2;}
+
+#highscoresTable tr:hover {background-color: #ddd;}
+
+#highscoresTable th {
+	padding-top: 12px;
+	padding-bottom: 12px;
+	text-align: left;
+	background-color: #ffb300;
+	color: white;
+}
+
+#loginForm {
+	padding-top: 50px;
+	padding-bottom: 60px;
+	width: 450px;
+	margin: 0 auto;
+}
+
+#scoreBackground {
+	margin-top: 5px;
+	width: 125px;
+	padding: 10px;
+}
+
+#gameGrid {
+	width: 800px;
+}
+
+#stage {
+	border: 2px solid black;
+}
